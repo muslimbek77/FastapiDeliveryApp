@@ -17,7 +17,7 @@ class User(Base):
         return f'<user {self.username}'
 
 class Order(Base):
-    __tablename__ = "orders"
+    __tablename__ = "order"
     ORDER_STATUS = (
         ('PENDING','pending'),
         ('IN_TRANSIT','in_transit'),
@@ -35,10 +35,11 @@ class Order(Base):
         return f'<Order {self.id}'
 
 class Product(Base):
-    __tablename__ = "Product"
+    __tablename__ = "product"
     id = Column(Integer,primary_key=True)
     name = Column(String(100))
     price = Column(Integer)
+    orders = Relationship('Order',back_populates='product') #many to one relationship
 
     def __repr__(self):
         return f'<Product {self.name}'

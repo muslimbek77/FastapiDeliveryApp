@@ -18,4 +18,5 @@ class SingUpModel(BaseModel):
             'password':'password12345',
             'is_staff':False,
             'is_active':True
-        }}
+        }
+        }
