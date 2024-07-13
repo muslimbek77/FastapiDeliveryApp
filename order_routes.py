@@ -88,9 +88,14 @@ async def get_orer_by_id(id:int, Authorise:AuthJWT=Depends()):
     current_user = session.query(User).filter(User.username == user).first()
 
     if current_user.is_staff:
+        
         order = session.query(Order).filter(Order.id == id).first()
+        if order:
 
-        return jsonable_encoder(order)
+            return jsonable_encoder(order)
+        else:
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Not found id {id}")
+
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only super admin see this order")
 
