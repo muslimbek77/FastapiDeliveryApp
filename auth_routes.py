@@ -1,10 +1,12 @@
 from fastapi.exceptions import HTTPException
-from fastapi import APIRouter,status
-from schemas import SingUpModel
+from fastapi import APIRouter,status,Depends
+from schemas import LoginModel, SingUpModel
 from database import session,engine
 from models import User
 from werkzeug.security import generate_password_hash,check_password_hash
-
+from fastapi_jwt_auth import AuthJWT
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import or_
 
 auth_router = APIRouter(
     prefix='/auth'
@@ -13,7 +15,11 @@ auth_router = APIRouter(
 session = session(bind=engine)
 
 @auth_router.get('/')
-async def signup():
+async def signup(Authorise:AuthJWT=Depends()):
+    try:
+        Authorise.jwt_required()
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid Token")
     return {"message" : "Bu auth route signup sahifasi"}
 
 @auth_router.post('/signup',status_code=status.HTTP_201_CREATED)
@@ -49,3 +55,28 @@ async def signup_user(user:SingUpModel):
     }
     return response_model
   
+
+@auth_router.post('/login',status_code=200)
+async def login(user:LoginModel,Authorize:AuthJWT=Depends()):
+    # db_user = session.query(User).filter(User.username == user.username).first()
+
+    #query with username or email
+    db_user = session.query(User).filter(
+        or_(
+            User.username == user.userame_or_email,
+            User.email == user.userame_or_email
+        )
+    ).first()
+
+    if db_user and  check_password_hash(db_user.password,user.password):
+        access_token = Authorize.create_access_token(subject=db_user.username)
+        refresh_token = Authorize.create_refresh_token(subject=db_user.username)
+
+        response = {
+            'access':access_token,
+            'refresh':refresh_token
+        }
+        return jsonable_encoder(response)
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
+
+
