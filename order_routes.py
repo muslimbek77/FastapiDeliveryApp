@@ -41,10 +41,37 @@ async def make_order(order:OrderModel,Authorize:AuthJWT=Depends()):
     session.add(new_order)
     session.commit()
 
-    response = {
+    data = {
+        "success":True,
+        "code":201,
+        "message":"Order is created successfully",
+        "data":{
         "id":new_order.id,
         "quantity":new_order.quantity,
         "order_statuses":new_order.order_statuses,
-
     }
+        
+    }
+
+    response = data
     return jsonable_encoder(response)
+
+
+
+@order_router.get('/list')
+async def list_all_order(Authorise:AuthJWT=Depends()):
+    #Bu yerda barcha buyurmalar bo'ladi
+    try:
+        Authorise.jwt_required()
+    except:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Enter valid token")
+    
+    current_user =Authorise.get_jwt_subject()
+    user = session.query(User).filter(User.username == current_user).first()
+
+    if user.is_staff:
+        orders = session.query(Order).all()
+        return jsonable_encoder(orders)
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only super admin see orders")
+    
