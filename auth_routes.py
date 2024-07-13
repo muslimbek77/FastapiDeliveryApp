@@ -1,3 +1,4 @@
+import datetime
 from fastapi.exceptions import HTTPException
 from fastapi import APIRouter,status,Depends
 from schemas import LoginModel, SingUpModel
@@ -59,7 +60,8 @@ async def signup_user(user:SingUpModel):
 @auth_router.post('/login',status_code=200)
 async def login(user:LoginModel,Authorize:AuthJWT=Depends()):
     # db_user = session.query(User).filter(User.username == user.username).first()
-
+    access_lifetime = datetime.timedelta(minutes=60)
+    refresh_lifetime = datetime.timedelta(days=3)
     #query with username or email
     db_user = session.query(User).filter(
         or_(
@@ -69,8 +71,8 @@ async def login(user:LoginModel,Authorize:AuthJWT=Depends()):
     ).first()
 
     if db_user and  check_password_hash(db_user.password,user.password):
-        access_token = Authorize.create_access_token(subject=db_user.username)
-        refresh_token = Authorize.create_refresh_token(subject=db_user.username)
+        access_token = Authorize.create_access_token(subject=db_user.username,expires_time=access_lifetime)
+        refresh_token = Authorize.create_refresh_token(subject=db_user.username,expires_time=refresh_lifetime)
 
         response = {
             'access':access_token,
@@ -84,7 +86,10 @@ async def login(user:LoginModel,Authorize:AuthJWT=Depends()):
 @auth_router.get('/login/refresh')
 async def refresh_token(Authorise:AuthJWT=Depends()):
     try:
-        Authorise.jwt_required() # valid access token
+        access_lifetime = datetime.timedelta(minutes=60)
+        refresh_lifetime = datetime.timedelta(days=3)
+
+        Authorise.jwt_refresh_token_required() # valid access token
         current_user = Authorise.get_jwt_subject() #access tokenni ajratib oladi
 
         # database dan userni filter orqali topamiz
@@ -93,7 +98,7 @@ async def refresh_token(Authorise:AuthJWT=Depends()):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         
         # access token yaratamiz
-        new_access_token = Authorise.create_access_token(subject=db_user.username)
+        new_access_token = Authorise.create_access_token(subject=db_user.username,expires_time=access_lifetime)
 
         response_model = {
         'success':True,
@@ -107,4 +112,4 @@ async def refresh_token(Authorise:AuthJWT=Depends()):
 
 
     except:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
