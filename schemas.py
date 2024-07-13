@@ -29,10 +29,31 @@ class LoginModel(BaseModel):
     userame_or_email: str    # Example: 'mohirdev'
     password: str    # Example: 'password12345'
 
-# class Settings(BaseModel):
-#     authjwt_secret_key:str = '26b092890d86493464b8bf8b6b233e12c711b327a5cc9c39c10ee046ba805c7a'
+class OrderModel(BaseModel):
+    id:Optional[int]
+    quantity:int
+    order_satatus:Optional[str] = 'PENDING'
+    user_id:Optional[int]
+    product_id:Optional[int]
+    class Config:
+        orm_model = True
+        schema_extra = {
+            "example":{
+                "quantity":2,
 
-# class LoginModel(BaseModel):
-#     username:str
-#     password:str
+            }
+        }
+
+
+class StatusOrderModel(BaseModel):
+    order_statuses:Optional[str] = 'PENDING'
+    class Config:
+        orm_model = True
+        schema_extra = {
+            "example":{
+                "order_satuses":"Pending",
+
+            }
+        }
+
     
