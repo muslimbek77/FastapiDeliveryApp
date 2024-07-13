@@ -51,16 +51,20 @@ class StatusOrderModel(BaseModel):
         orm_model = True
         schema_extra = {
             "example":{
-                "order_satuses":"Pending",
+                "order_satuses":"PENDING",
 
             }
         }
 
-
-{
-                "username": "muslim",
-                "email": "mohirdeasv.praktikum@gmail.com",
-                "password": "muslim",
-                "is_staff": True,
-                "is_active": True
+class ProductModel(BaseModel):
+    id:Optional[int]
+    name:str
+    price:int
+    class Config:
+        orm_model = True
+        schema_extra = {
+            "example":{
+                "name":"Uzbek plov",
+                "price": 30000
             }
+        }
