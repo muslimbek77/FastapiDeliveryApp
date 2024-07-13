@@ -75,3 +75,23 @@ async def list_all_order(Authorise:AuthJWT=Depends()):
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only super admin see orders")
     
+
+@order_router.get('/{id}')
+async def get_orer_by_id(id:int, Authorise:AuthJWT=Depends()):
+    # Get an order by its ID
+    try:
+        Authorise.jwt_required()
+    except:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Enter valid token")
+    
+    user = Authorise.get_jwt_subject()
+    current_user = session.query(User).filter(User.username == user).first()
+
+    if current_user.is_staff:
+        order = session.query(Order).filter(Order.id == id).first()
+
+        return jsonable_encoder(order)
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only super admin see this order")
+
+    

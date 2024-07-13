@@ -56,4 +56,11 @@ class StatusOrderModel(BaseModel):
             }
         }
 
-    
+
+{
+                "username": "muslim",
+                "email": "mohirdeasv.praktikum@gmail.com",
+                "password": "muslim",
+                "is_staff": True,
+                "is_active": True
+            }
