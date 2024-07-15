@@ -34,7 +34,7 @@ async def make_order(order:OrderModel,Authorize:AuthJWT=Depends()):
 
     new_order = Order(
         quantity = order.quantity,
-        product = order.product_id,
+        product_id = order.product_id,
 
     )
     new_order.user = user
