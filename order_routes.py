@@ -34,7 +34,7 @@ async def make_order(order:OrderModel,Authorize:AuthJWT=Depends()):
 
     new_order = Order(
         quantity = order.quantity,
-        # product = order.product_id,
+        product = order.product_id,
 
     )
     new_order.user = user
@@ -47,8 +47,15 @@ async def make_order(order:OrderModel,Authorize:AuthJWT=Depends()):
         "message":"Order is created successfully",
         "data":{
         "id":new_order.id,
+        "product":{
+            "id":new_order.product.id,
+            "name":new_order.product.name,
+            "price":new_order.product.price
+
+        },
         "quantity":new_order.quantity,
-        "order_statuses":new_order.order_statuses,
+        "order_statuses":new_order.order_statuses.value,
+        "total_price": new_order.quantity*new_order.product.price
     }
         
     }
@@ -71,7 +78,26 @@ async def list_all_order(Authorize:AuthJWT=Depends()):
 
     if user.is_staff:
         orders = session.query(Order).all()
-        return jsonable_encoder(orders)
+        custom_data = [{
+            "id":order.id,
+            "user":{
+                "id":order.user.id,
+                "username":order.user.username,
+                "email":order.user.email
+            },
+        "product":{
+            "id":order.product.id,
+            "name":order.product.name,
+            "price":order.product.price,
+        
+        },
+        "quantity":order.quantity,
+        "order_statuses":order.order_statuses.value,
+        "total_price": order.quantity*order.product.price
+        
+    } 
+        for order in orders]
+        return jsonable_encoder(custom_data)
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only super admin see orders")
     
