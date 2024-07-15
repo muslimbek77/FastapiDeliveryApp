@@ -16,9 +16,9 @@ auth_router = APIRouter(
 session = session(bind=engine)
 
 @auth_router.get('/')
-async def signup(Authorise:AuthJWT=Depends()):
+async def signup(Authorize:AuthJWT=Depends()):
     try:
-        Authorise.jwt_required()
+        Authorize.jwt_required()
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid Token")
     return {"message" : "Bu auth route signup sahifasi"}
@@ -84,13 +84,13 @@ async def login(user:LoginModel,Authorize:AuthJWT=Depends()):
 
 
 @auth_router.get('/login/refresh')
-async def refresh_token(Authorise:AuthJWT=Depends()):
+async def refresh_token(Authorize:AuthJWT=Depends()):
     try:
         access_lifetime = datetime.timedelta(minutes=60)
         refresh_lifetime = datetime.timedelta(days=3)
 
-        Authorise.jwt_refresh_token_required() # valid access token
-        current_user = Authorise.get_jwt_subject() #access tokenni ajratib oladi
+        Authorize.jwt_refresh_token_required() # valid access token
+        current_user = Authorize.get_jwt_subject() #access tokenni ajratib oladi
 
         # database dan userni filter orqali topamiz
         db_user = session.query(User).filter((User.username == current_user)).first()
@@ -98,7 +98,7 @@ async def refresh_token(Authorise:AuthJWT=Depends()):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         
         # access token yaratamiz
-        new_access_token = Authorise.create_access_token(subject=db_user.username,expires_time=access_lifetime)
+        new_access_token = Authorize.create_access_token(subject=db_user.username,expires_time=access_lifetime)
 
         response_model = {
         'success':True,

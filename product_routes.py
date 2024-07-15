@@ -69,15 +69,15 @@ async def list_all_products(Authorize:AuthJWT=Depends()):
     return jsonable_encoder(custom_data)
     
 
-@product_router.get('/{id}')
-async def get_product_by_id(id:int, Authorise:AuthJWT=Depends()):
+@product_router.get('/{id}',status_code=status.HTTP_200_OK)
+async def get_product_by_id(id:int, Authorize:AuthJWT=Depends()):
     # Get an order by its ID
     try:
-        Authorise.jwt_required()
+        Authorize.jwt_required()
     except:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Enter valid token")
     
-    user = Authorise.get_jwt_subject()
+    user = Authorize.get_jwt_subject()
     current_user = session.query(User).filter(User.username == user).first()
 
     if current_user.is_staff:
@@ -98,3 +98,65 @@ async def get_product_by_id(id:int, Authorise:AuthJWT=Depends()):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only super admin see this order")
 
     
+@product_router.get('/delete/{id}',status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product_by_id(id:int,Authorize:AuthJWT=Depends()):
+    #Bu endpoint mahsulotni o'chirish uchun ishlatiladi
+    try:
+        Authorize.jwt_required()
+    except:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Enter valid token")
+    
+    user = Authorize.get_jwt_subject()
+    current_user = session.query(User).filter(User.username == user).first()
+        
+    product = session.query(Product).filter(Product.id == id).first()
+    if current_user.is_staff:
+        if product:
+            session.delete(product)
+            session.commit()
+            data={
+                "success":True,
+                "code":200,
+                "message": f"Product with ID {id} has been deleted"
+            }
+            return jsonable_encoder(data)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Not found this ID {id}")
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only superadmin product delete")
+
+
+@product_router.put('/update/{id}',status_code=status.HTTP_200_OK)
+async def put_product_by_id(id:int,update_data:ProductModel,Authorize:AuthJWT=Depends()):
+    #Bu endpoint mahsulotni yangilash uchun ishlatiladi
+    try:
+        Authorize.jwt_required()
+    except:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Enter valid token")
+    
+    user = Authorize.get_jwt_subject()
+    current_user = session.query(User).filter(User.username == user).first()
+    
+    if current_user.is_staff:
+        product = session.query(Product).filter(Product.id == id).first()
+        if product:
+            #update product
+            for key, value in update_data.dict(exclude_unset=True).items():
+                setattr(product, key, value)
+            session.commit()
+            data={
+                "success":True,
+                "code":200,
+                "message": f"Product with ID {id} has been updated",
+                "data":{
+                    "id":product.id,
+                    "name":product.name,
+                    "price":product.price
+                }
+            }
+            return jsonable_encoder(data)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Not found this ID {id}")
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only superadmin product update")
+

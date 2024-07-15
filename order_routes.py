@@ -59,14 +59,14 @@ async def make_order(order:OrderModel,Authorize:AuthJWT=Depends()):
 
 
 @order_router.get('/list')
-async def list_all_order(Authorise:AuthJWT=Depends()):
+async def list_all_order(Authorize:AuthJWT=Depends()):
     #Bu yerda barcha buyurmalar bo'ladi
     try:
-        Authorise.jwt_required()
+        Authorize.jwt_required()
     except:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Enter valid token")
     
-    current_user =Authorise.get_jwt_subject()
+    current_user =Authorize.get_jwt_subject()
     user = session.query(User).filter(User.username == current_user).first()
 
     if user.is_staff:
@@ -77,14 +77,14 @@ async def list_all_order(Authorise:AuthJWT=Depends()):
     
 
 @order_router.get('/{id}')
-async def get_orer_by_id(id:int, Authorise:AuthJWT=Depends()):
+async def get_orer_by_id(id:int, Authorize:AuthJWT=Depends()):
     # Get an order by its ID
     try:
-        Authorise.jwt_required()
+        Authorize.jwt_required()
     except:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Enter valid token")
     
-    user = Authorise.get_jwt_subject()
+    user = Authorize.get_jwt_subject()
     current_user = session.query(User).filter(User.username == user).first()
 
     if current_user.is_staff:
