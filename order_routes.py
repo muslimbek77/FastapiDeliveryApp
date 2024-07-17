@@ -65,7 +65,7 @@ async def make_order(order:OrderModel,Authorize:AuthJWT=Depends()):
 
 
 
-@order_router.get('/list')
+@order_router.get('/list',status_code=status.HTTP_200_OK)
 async def list_all_order(Authorize:AuthJWT=Depends()):
     #Bu yerda barcha buyurmalar bo'ladi
     try:
@@ -102,7 +102,7 @@ async def list_all_order(Authorize:AuthJWT=Depends()):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only super admin see orders")
     
 
-@order_router.get('/{id}')
+@order_router.get('/{id}',status_code=status.HTTP_200_OK)
 async def get_orer_by_id(id:int, Authorize:AuthJWT=Depends()):
     # Get an order by its ID
     try:
@@ -125,4 +125,36 @@ async def get_orer_by_id(id:int, Authorize:AuthJWT=Depends()):
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Only super admin see this order")
 
+
+@order_router.get('/user/order',status_code=status.HTTP_200_OK)
+async def get_user_orders(Authorize:AuthJWT=Depends()):
+    """Get a requested user's order
+    """
+    try:
+        Authorize.jwt_required()
+    except:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Enter valid token")
+    
+    username = Authorize.get_jwt_subject()
+    user = session.query(User).filter(User.username == username).first()
+    custom_data = [{
+            "id":order.id,
+            "user":{
+                "id":order.user.id,
+                "username":order.user.username,
+                "email":order.user.email
+            },
+        "product":{
+            "id":order.product.id,
+            "name":order.product.name,
+            "price":order.product.price,
+        
+        },
+        "quantity":order.quantity,
+        "order_statuses":order.order_statuses.value,
+        "total_price": order.quantity*order.product.price}
+        for order in user.orders
+    ]
+
+    return jsonable_encoder(custom_data)
     
