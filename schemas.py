@@ -1,70 +1,75 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 
-class SingUpModel(BaseModel):
-    id: Optional[int]  # Example: 1
-    username: str      # Example: 'mohirdev'
-    email: str         # Example: 'mohirdev.praktikum@gmail.com'
-    password: str      # Example: 'password12345'
-    is_staff: Optional[bool] = False   # Example: False
-    is_active: Optional[bool] = True  # Example: True
+
+class SignUpModel(BaseModel):
+    id: Optional[int]
+    username: str
+    email: str
+    password: str
+    is_staff: Optional[bool]
+    is_active: Optional[bool]
 
     class Config:
         orm_mode = True
         schema_extra = {
             'example': {
-                'username': 'mohirdev',
-                'email': 'mohirdev.praktikum@gmail.com',
-                'password': 'password12345',
+                'username': "mohirdev",
+                'email': "mohirdev.praktikum@gmail.com",
+                'password': "password12345",
                 'is_staff': False,
-                'is_active': True
+                "is_active": True
             }
         }
 
+
 class Settings(BaseModel):
-    authjwt_secret_key:str = '26b092890d86493464b8bf8b6b233e12c711b327a5cc9c39c10ee046ba805c7a'
+    authjwt_secret_key: str = '8d2063db4426a8c332a85238d2a5fa11a746f5f4f5da7f098460e35f941037e5'
 
 
 class LoginModel(BaseModel):
-    userame_or_email: str    # Example: 'mohirdev'
-    password: str    # Example: 'password12345'
+    username_or_email: str
+    password: str
+
 
 class OrderModel(BaseModel):
-    id:Optional[int]
-    quantity:int
-    order_satatus:Optional[str] = 'PENDING'
-    user_id:Optional[int]
-    product_id:int
+    id: Optional[int]
+    quantity: int
+    order_statuses: Optional[str] = "PENDING"
+    user_id: Optional[int]
+    product_id: int
+
     class Config:
         orm_model = True
         schema_extra = {
-            "example":{
-                "quantity":2,
-
+            "example": {
+                "quantity": 2,
             }
         }
 
 
-class StatusOrderModel(BaseModel):
-    order_statuses:Optional[str] = 'PENDING'
+class OrderStatusModel(BaseModel):
+    order_statuses: Optional[str] = "PENDING"
+
     class Config:
         orm_model = True
         schema_extra = {
-            "example":{
-                "order_satuses":"PENDING",
-
+            "example": {
+                "order_statuses": "PENDING"
             }
         }
+
 
 class ProductModel(BaseModel):
-    id:Optional[int]
-    name:str
-    price:int
+    id: Optional[int]
+    name: str
+    price: int
+
     class Config:
         orm_model = True
         schema_extra = {
-            "example":{
-                "name":"Uzbek plov",
+            "example": {
+                "name": "Uzbek plov",
                 "price": 30000
             }
         }
